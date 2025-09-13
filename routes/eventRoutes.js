@@ -3,6 +3,7 @@ const eventControllers = require("../controllers/eventController");
 const eventValidations = {
   requireId: require("../validations/requireId"),
   validateId: require("../validations/validateId"),
+  validateLogin: require("../validations/validateLogin"),
   validateCreateEvent: require("../validations/validateCreateEvent"),
   validateUpdateEvent: require("../validations/validateUpdateEvent"),
 };
@@ -20,7 +21,10 @@ class eventRoutes extends BaseRoutes {
       {
         method: "post",
         path: "/events",
-        middlewares: [eventValidations.validateCreateEvent],
+        middlewares: [
+          eventValidations.validateLogin,
+          eventValidations.validateCreateEvent,
+        ],
         handler: eventControllers.createEvent,
       },
       {
@@ -36,10 +40,7 @@ class eventRoutes extends BaseRoutes {
       {
         method: "delete",
         path: "/events",
-        middlewares: [
-          eventValidations.requireId,
-          eventValidations.validateId,
-        ],
+        middlewares: [eventValidations.requireId, eventValidations.validateId],
         handler: eventControllers.deleteEvent,
       },
     ]);

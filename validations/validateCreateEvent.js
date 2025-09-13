@@ -15,14 +15,10 @@ const createEventSchema = Joi.object({
       "string.max": "Name must not exceed 255 characters.",
     })
     .required(),
-  price: Joi.number()
+  date: Joi.number()
     .integer()
-    .min(1)
-    .max(100000) // Cents, $1000
     .messages({
-      "number.base": "Price must be an integer.",
-      "number.min": "Age must be at least 1.",
-      "number.max": "Age must not exceed 100.",
+      "number.base": "Date must be an integer.",
     })
     .required(),
 });

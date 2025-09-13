@@ -1,5 +1,6 @@
 const { User } = require("../models/userModel");
 const { hashPassword } = require("../utilities");
+const jwt = require("jsonwebtoken");
 
 exports.getUsers = async (req, res) => {
   try {
@@ -30,6 +31,26 @@ exports.createUser = async (req, res) => {
       role: req.body.role,
       password: hashedPassword,
     });
+
+    const { name, phoneNum, role = "guest" } = req.body;
+
+    try {
+      const token = jwt.sign(
+        { _id: newUser._id, name, phoneNum, role },
+        process.env.JWT_SECRET,
+        { expiresIn: "24h" }
+      );
+
+      // Append the token to the req so we can give it back to the user later
+      req.token = token;
+    } catch (error) {
+      console.error("Token generation error:", error); // Logs full error to console
+      return res.status(500).json({
+        error: "Token generation failed",
+        details: error.message, // or use `error` for full stack trace
+      });
+    }
+
     await newUser.save();
     // We are appending the token to the response so the user can use it
     return res.status(201).json({

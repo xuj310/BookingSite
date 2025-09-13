@@ -20,7 +20,9 @@ exports.getEvents = async (req, res) => {
 
 exports.createEvent = async (req, res) => {
   try {
-    const userId = req.user && req.user._id; // or req.user.id depending on your setup
+    const userId = req.user._id; // or req.user.id depending on your setup
+
+    console.log("userId is:", userId);
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized: User not found" });
     }
@@ -29,7 +31,7 @@ exports.createEvent = async (req, res) => {
       name: req.body.name,
       description: req.body.description,
       date: req.body.date,
-      participants: [userId],
+      participants: userId,
     });
     await newEvent.save();
     return res.status(201).json({
