@@ -49,7 +49,7 @@ exports.updateEvent = async (req, res) => {
     const updateFields = {};
     if (req.body.name) updateFields.name = req.body.name;
     if (req.body.description) updateFields.description = req.body.description;
-    if (req.body.price) updateFields.price = req.body.price;
+    if (req.body.date) updateFields.date = req.body.date;
 
     const updatedEvent = await Event.findByIdAndUpdate(
       req.query.id,
