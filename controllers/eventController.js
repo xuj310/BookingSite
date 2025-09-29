@@ -20,13 +20,13 @@ exports.getEvents = async (req, res) => {
 
 exports.createEvent = async (req, res) => {
   try {
-    const userId = req.user._id; // or req.user.id depending on your setup
+    const userId = req.user._id;
 
     console.log("userId is:", userId);
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized: User not found" });
     }
-
+    // Put the user that created the event in the participants
     const newEvent = new Event({
       name: req.body.name,
       description: req.body.description,

@@ -32,7 +32,7 @@ exports.createUser = async (req, res) => {
       password: hashedPassword,
     });
 
-    const { name, phoneNum, role = "guest" } = req.body;
+    const { name, phoneNum, role = "standard_member" } = req.body;
 
     try {
       const token = jwt.sign(
