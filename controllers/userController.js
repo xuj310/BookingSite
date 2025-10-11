@@ -23,6 +23,7 @@ exports.getUsers = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
+    console.log("Entering Create User");
     const hashedPassword = await hashPassword(req.body.password);
 
     const newUser = new User({
@@ -33,16 +34,13 @@ exports.createUser = async (req, res) => {
       role: req.body.role,
       password: hashedPassword,
     });
-
-    const { name, phoneNum, role = "standard_member" } = req.body;
-
     try {
       const token = jwt.sign(
         {
-          _id: user._id,
-          name: user.name,
-          phoneNum: user.phoneNum,
-          role: user.role,
+          _id: newUser._id,
+          name: newUser.name,
+          phoneNum: newUser.phoneNum,
+          role: newUser.role,
         },
         process.env.JWT_SECRET,
         { expiresIn: "24h" }
