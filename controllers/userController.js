@@ -1,6 +1,7 @@
 const { User } = require("../models/userModel");
 const { hashPassword } = require("../utilities");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 exports.getUsers = async (req, res) => {
   try {
@@ -37,7 +38,12 @@ exports.createUser = async (req, res) => {
 
     try {
       const token = jwt.sign(
-        { _id: newUser._id, name, phoneNum, role },
+        {
+          _id: user._id,
+          name: user.name,
+          phoneNum: user.phoneNum,
+          role: user.role,
+        },
         process.env.JWT_SECRET,
         { expiresIn: "24h" }
       );
@@ -109,6 +115,46 @@ exports.deleteUser = async (req, res) => {
 
     return res.status(200).json({
       message: "User deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ error: "E-Mail not found" });
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) return res.status(401).json({ error: "Invalid password" });
+
+    try {
+      const token = jwt.sign(
+        {
+          _id: user._id,
+          name: user.name,
+          phoneNum: user.phoneNum,
+          role: user.role,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "24h" }
+      );
+
+      // Append the token to the req so we can give it back to the user later
+      req.token = token;
+    } catch (error) {
+      console.error("Token generation error:", error); // Logs full error to console
+      return res.status(500).json({
+        error: "Token generation failed",
+        details: error.message, // or use `error` for full stack trace
+      });
+    }
+    return res.status(201).json({
+      message: "Logged in successfully",
+      token: req.token,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

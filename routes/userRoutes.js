@@ -10,6 +10,7 @@ const userValidations = {
   isAdmin: require("../validations/isAdmin"),
   validateCreateUser: require("../validations/validateCreateUser"),
   validateUpdateUser: require("../validations/validateUpdateUser"),
+  validateCredentials: require("../validations/validateCredentials"),
 };
 
 class userRoutes extends BaseRoutes {
@@ -30,6 +31,14 @@ class userRoutes extends BaseRoutes {
           middlewares.generateUserToken,
         ],
         handler: userControllers.createUser,
+      },
+      {
+        method: "post",
+        path: "/users/login",
+        middlewares: [
+          userValidations.validateCredentials,
+        ],
+        handler: userControllers.loginUser,
       },
       {
         method: "put",
