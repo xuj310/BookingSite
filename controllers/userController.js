@@ -23,9 +23,6 @@ exports.getUsers = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
-    console.log("Entering Create User");
-
-    // 🔍 Check for existing email
     const existingUser = await User.findOne({ email: req.body.email });
     if (existingUser) {
       return res.status(400).json({
