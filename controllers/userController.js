@@ -123,38 +123,52 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // 🔍 Check for existing token
+    const authHeader = req.headers.authorization;
+    const existingToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : null;
+
+    if (existingToken) {
+      try {
+        const decoded = jwt.verify(existingToken, process.env.JWT_SECRET);
+        console.log("Valid token found:", decoded);
+
+        return res.status(200).json({
+          message: "Already logged in",
+          token: existingToken
+        });
+      } catch (err) {
+        console.warn("Token invalid or expired:", err.message);
+        // Continue to login flow
+      }
+    }
+
+    // 🔐 Proceed with login
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ error: "E-Mail not found" });
+    if (!user) return res.status(401).json({ errors: ["E-mail not found"] });
 
     const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) return res.status(401).json({ error: "Invalid password" });
+    if (!isValid) return res.status(401).json({ errors: ["Invalid Password"] });
 
-    try {
-      const token = jwt.sign(
-        {
-          _id: user._id,
-          name: user.name,
-          phoneNum: user.phoneNum,
-          role: user.role,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "24h" }
-      );
+    // 🧾 Issue new token
+    const newToken = jwt.sign(
+      {
+        _id: user._id,
+        name: user.name,
+        phoneNum: user.phoneNum,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
 
-      // Append the token to the req so we can give it back to the user later
-      req.token = token;
-    } catch (error) {
-      console.error("Token generation error:", error); // Logs full error to console
-      return res.status(500).json({
-        error: "Token generation failed",
-        details: error.message, // or use `error` for full stack trace
-      });
-    }
     return res.status(201).json({
       message: "Logged in successfully",
-      token: req.token,
+      token: newToken,
     });
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({ message: error.message });
   }
 };
