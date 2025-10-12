@@ -24,6 +24,15 @@ exports.getUsers = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     console.log("Entering Create User");
+
+    // 🔍 Check for existing email
+    const existingUser = await User.findOne({ email: req.body.email });
+    if (existingUser) {
+      return res.status(400).json({
+        errors: ["Email is already registered."],
+      });
+    }
+
     const hashedPassword = await hashPassword(req.body.password);
 
     const newUser = new User({
@@ -31,33 +40,31 @@ exports.createUser = async (req, res) => {
       email: req.body.email,
       phoneNum: req.body.phoneNum,
       age: req.body.age,
-      role: req.body.role,
       password: hashedPassword,
     });
+
     try {
       const token = jwt.sign(
         {
           _id: newUser._id,
           name: newUser.name,
           phoneNum: newUser.phoneNum,
-          role: newUser.role,
         },
         process.env.JWT_SECRET,
         { expiresIn: "24h" }
       );
 
-      // Append the token to the req so we can give it back to the user later
       req.token = token;
     } catch (error) {
-      console.error("Token generation error:", error); // Logs full error to console
+      console.error("Token generation error:", error);
       return res.status(500).json({
         error: "Token generation failed",
-        details: error.message, // or use `error` for full stack trace
+        details: error.message,
       });
     }
 
     await newUser.save();
-    // We are appending the token to the response so the user can use it
+
     return res.status(201).json({
       message: "User created successfully",
       newUser,
@@ -80,7 +87,6 @@ exports.updateUser = async (req, res) => {
     if (req.body.name) updateFields.name = req.body.name;
     if (req.body.phoneNum) updateFields.phoneNum = req.body.phoneNum;
     if (req.body.age) updateFields.age = req.body.age;
-    if (req.body.role) updateFields.role = req.body.role;
     if (req.body.password) updateFields.password = hashedPassword;
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -136,7 +142,7 @@ exports.loginUser = async (req, res) => {
 
         return res.status(200).json({
           message: "Already logged in",
-          token: existingToken
+          token: existingToken,
         });
       } catch (err) {
         console.warn("Token invalid or expired:", err.message);
@@ -157,7 +163,6 @@ exports.loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         phoneNum: user.phoneNum,
-        role: user.role,
       },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
