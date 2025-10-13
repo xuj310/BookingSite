@@ -39,6 +39,7 @@ exports.getEvents = async (req, res) => {
 
       const enrichedEvent = {
         _id: event._id,
+        imgUrl: event.imgUrl,
         title: event.title,
         description: event.description,
         date: event.date,
@@ -68,6 +69,7 @@ exports.createEvent = async (req, res) => {
     }
     // Put the user that created the event in the participants
     const newEvent = new Event({
+      imgUrl: req.body.imgUrl,
       title: req.body.title,
       description: req.body.description,
       date: req.body.date,
@@ -87,6 +89,7 @@ exports.updateEvent = async (req, res) => {
   try {
     // Changing the fields is optional
     const updateFields = {};
+    if (req.body.imgUrl) updateFields.imgUrl = req.body.imgUrl;
     if (req.body.title) updateFields.title = req.body.title;
     if (req.body.description) updateFields.description = req.body.description;
     if (req.body.date) updateFields.date = req.body.date;

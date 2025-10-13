@@ -1,6 +1,11 @@
 const Joi = require("joi");
 
 const createEventSchema = Joi.object({
+  imgUrl: Joi.string()
+    .messages({
+      "string.empty": "An image url is required."
+    })
+    .required(),
   title: Joi.string()
     .min(3)
     .max(50)
