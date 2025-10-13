@@ -17,7 +17,6 @@ const loginUserSchema = Joi.object({
       "string.max": "Password must not exceed 30 characters.",
     })
     .required(),
-  role: Joi.string().valid("admin", "guest").default("guest"),
 });
 
 const validateCredentials = (req, res, next) => {

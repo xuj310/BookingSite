@@ -7,7 +7,6 @@ const middlewares = {
 const userValidations = {
   requireId: require("../validations/requireId"),
   validateId: require("../validations/validateId"),
-  isAdmin: require("../validations/isAdmin"),
   validateCreateUser: require("../validations/validateCreateUser"),
   validateUpdateUser: require("../validations/validateUpdateUser"),
   validateCredentials: require("../validations/validateCredentials"),
@@ -56,7 +55,6 @@ class userRoutes extends BaseRoutes {
         middlewares: [
           userValidations.requireId,
           middlewares.checkUserToken,
-          userValidations.isAdmin,
           userValidations.validateId,
         ],
         handler: userControllers.deleteUser,

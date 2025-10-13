@@ -38,6 +38,15 @@ class eventRoutes extends BaseRoutes {
         handler: eventControllers.updateEvent,
       },
       {
+        method: "put",
+        path: "/events/participants",
+        middlewares: [
+          eventValidations.requireId,
+          eventValidations.validateId,
+        ],
+        handler: eventControllers.updateEventParticipants,
+      },
+      {
         method: "delete",
         path: "/events",
         middlewares: [eventValidations.requireId, eventValidations.validateId],

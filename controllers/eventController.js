@@ -114,6 +114,55 @@ exports.updateEvent = async (req, res) => {
   }
 };
 
+exports.updateEventParticipants = async (req, res) => {
+  console.log("trying to manage participants!");
+  try {
+    const eventId = req.query.id;
+    const { addid, removeid } = req.body;
+
+    if (!eventId) {
+      return res.status(400).json({ message: "Missing event ID" });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // Remove participant
+    if (removeid) {
+      const index = event.participants.indexOf(removeid);
+      if (index !== -1) {
+        event.participants.splice(index, 1);
+        await event.save();
+        return res.json({ message: "Participant removed", event });
+      } else {
+        return res
+          .status(400)
+          .json({ message: "Participant not found in event" });
+      }
+    }
+
+    // Add participant
+    if (addid) {
+      if (!event.participants.includes(addid)) {
+        event.participants.push(addid);
+        await event.save();
+        return res.json({ message: "Participant added", event });
+      } else {
+        return res
+          .status(400)
+          .json({ message: "Participant already in event" });
+      }
+    }
+
+    return res.status(400).json({ message: "No addid or removeid provided" });
+  } catch (error) {
+    console.error("Error updating participants:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 exports.deleteEvent = async (req, res) => {
   try {
     const deletedEvent = await Event.findByIdAndDelete(req.query.id);
