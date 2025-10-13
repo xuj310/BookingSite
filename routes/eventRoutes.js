@@ -23,7 +23,6 @@ class eventRoutes extends BaseRoutes {
         path: "/events",
         middlewares: [
           eventValidations.validateLogin,
-          eventValidations.validateLogin,
           eventValidations.validateCreateEvent,
         ],
         handler: eventControllers.createEvent,

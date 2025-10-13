@@ -3,6 +3,10 @@ const { hashPassword } = require("../utilities");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
+/* 
+  Users Controller
+*/
+
 exports.getUsers = async (req, res) => {
   try {
     // If an id is provided, retrieve the specific user
@@ -23,6 +27,7 @@ exports.getUsers = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
+    // Get the e-mail and see if the user has already registered
     const existingUser = await User.findOne({ email: req.body.email });
     if (existingUser) {
       return res.status(400).json({
@@ -40,6 +45,7 @@ exports.createUser = async (req, res) => {
       password: hashedPassword,
     });
 
+    // Generate a new login token for the user
     try {
       const token = jwt.sign(
         {
@@ -48,12 +54,11 @@ exports.createUser = async (req, res) => {
           phoneNum: newUser.phoneNum,
         },
         process.env.JWT_SECRET,
-        { expiresIn: "24h" }
+        { expiresIn: process.env.JWT_SECRET_EXPIRE }
       );
 
       req.token = token;
     } catch (error) {
-      console.error("Token generation error:", error);
       return res.status(500).json({
         error: "Token generation failed",
         details: error.message,
@@ -122,39 +127,44 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+// Controls the login system
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 🔍 Check for existing token
+    // Check for existing token
     const authHeader = req.headers.authorization;
     const existingToken = authHeader?.startsWith("Bearer ")
       ? authHeader.split(" ")[1]
       : null;
 
     if (existingToken) {
-      try {
-        const decoded = jwt.verify(existingToken, process.env.JWT_SECRET);
-        console.log("Valid token found:", decoded);
+      let decoded;
 
-        return res.status(200).json({
-          message: "Already logged in",
-          token: existingToken,
-        });
+      // If there's a token, validate it
+      try {
+        decoded = jwt.verify(existingToken, process.env.JWT_SECRET);
       } catch (err) {
-        console.warn("Token invalid or expired:", err.message);
-        // Continue to login flow
+        console.warn("Invalid or expired token:", err.message);
+        return res.status(401).json({
+          message: "Session expired or token invalid. Please log in again.",
+        });
       }
+
+      return res.status(200).json({
+        message: "Already logged in",
+        token: existingToken,
+      });
     }
 
-    // 🔐 Proceed with login
+    // Proceed with login
     const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ errors: ["E-mail not found"] });
 
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) return res.status(401).json({ errors: ["Invalid Password"] });
 
-    // 🧾 Issue new token
+    // Issue new token
     const newToken = jwt.sign(
       {
         _id: user._id,
@@ -162,7 +172,7 @@ exports.loginUser = async (req, res) => {
         phoneNum: user.phoneNum,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: process.env.JWT_SECRET_EXPIRE }
     );
 
     return res.status(201).json({
