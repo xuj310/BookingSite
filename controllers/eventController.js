@@ -32,7 +32,6 @@ exports.getEvents = async (req, res) => {
         const user = await User.findById(userId);
 
         if (user) {
-          console.log("User name:", user.name);
           participantDetails.push({ id: userId, name: user.name });
         } else {
           console.log("User not found for ID:", userId);
@@ -71,7 +70,6 @@ exports.createEvent = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    console.log("userId is:", userId);
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized: User not found" });
     }
@@ -95,6 +93,21 @@ exports.createEvent = async (req, res) => {
 };
 
 exports.updateEvent = async (req, res) => {
+  const userId = req.user._id; // Authenticated user
+  const eventId = req.query.id;
+
+  const event = await Event.findById(eventId);
+
+  if (!event) {
+    return res.status(404).json({ message: "Event not found" });
+  }
+
+  if (event.host.toString() !== userId.toString()) {
+    return res
+      .status(403)
+      .json({ message: "Only the host can edit this event" });
+  }
+
   try {
     // Changing the fields is optional
     const updateFields = {};
@@ -183,11 +196,22 @@ exports.updateEventParticipants = async (req, res) => {
 
 exports.deleteEvent = async (req, res) => {
   try {
-    const deletedEvent = await Event.findByIdAndDelete(req.query.id);
+    const userId = req.user._id; // Authenticated user
+    const eventId = req.query.id;
 
-    if (!deletedEvent) {
+    const event = await Event.findById(eventId);
+
+    if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
+
+    if (event.host.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Only the host can delete this event" });
+    }
+
+    await Event.findByIdAndDelete(eventId);
 
     return res.status(200).json({
       message: "Event deleted successfully",

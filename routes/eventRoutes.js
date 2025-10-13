@@ -23,6 +23,7 @@ class eventRoutes extends BaseRoutes {
         path: "/events",
         middlewares: [
           eventValidations.validateLogin,
+          eventValidations.validateLogin,
           eventValidations.validateCreateEvent,
         ],
         handler: eventControllers.createEvent,
@@ -33,6 +34,7 @@ class eventRoutes extends BaseRoutes {
         middlewares: [
           eventValidations.requireId,
           eventValidations.validateId,
+          eventValidations.validateLogin,
           eventValidations.validateUpdateEvent,
         ],
         handler: eventControllers.updateEvent,
@@ -42,14 +44,14 @@ class eventRoutes extends BaseRoutes {
         path: "/events/participants",
         middlewares: [
           eventValidations.requireId,
-          eventValidations.validateId,
+          eventValidations.validateId, eventValidations.validateLogin
         ],
         handler: eventControllers.updateEventParticipants,
       },
       {
         method: "delete",
         path: "/events",
-        middlewares: [eventValidations.requireId, eventValidations.validateId],
+        middlewares: [eventValidations.requireId, eventValidations.validateId, eventValidations.validateLogin],
         handler: eventControllers.deleteEvent,
       },
     ]);
