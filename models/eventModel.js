@@ -5,6 +5,7 @@ const eventSchema = new mongoose.Schema({
   title: { type: String, required: true, minlength: 3, maxlength: 50 },
   description: { type: String, required: true, minlength: 3, maxlength: 255 },
   date: { type: Number, required: true },
+  host: { type: String, required: true },
   participants: [
     {
       type: String,

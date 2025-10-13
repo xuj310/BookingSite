@@ -7,7 +7,7 @@ exports.getEvents = async (req, res) => {
 
     if (req.query.id) {
       const singleEvent = await Event.findById(req.query.id);
-      events.push(singleEvent);
+      if (singleEvent) events.push(singleEvent);
     } else {
       events = await Event.find();
     }
@@ -15,14 +15,9 @@ exports.getEvents = async (req, res) => {
     // Filter by userId if provided
     if (req.query.userid) {
       console.log("Found userid!");
-      const filtered = [];
-      for (let i = 0; i < events.length; i++) {
-        const event = events[i];
-        if (event.participants.includes(req.query.userid)) {
-          filtered.push(event);
-        }
-      }
-      events = filtered;
+      events = events.filter((event) =>
+        event.participants.includes(req.query.userid)
+      );
     }
 
     const enrichedEvents = [];
@@ -30,23 +25,36 @@ exports.getEvents = async (req, res) => {
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
       const participantDetails = [];
+      let modified = false;
 
       for (let j = 0; j < event.participants.length; j++) {
         const userId = event.participants[j];
         const user = await User.findById(userId);
-        participantDetails.push({ id: userId, name: user.name });
+
+        if (user) {
+          console.log("User name:", user.name);
+          participantDetails.push({ id: userId, name: user.name });
+        } else {
+          console.log("User not found for ID:", userId);
+          // Remove the invalid participant
+          event.participants.splice(j, 1);
+          j--; // Adjust index after removal
+          modified = true;
+        }
       }
 
-      const enrichedEvent = {
+      if (modified) {
+        await event.save(); // Save only if participants were removed
+      }
+
+      enrichedEvents.push({
         _id: event._id,
         imgUrl: event.imgUrl,
         title: event.title,
         description: event.description,
         date: event.date,
         participants: participantDetails,
-      };
-
-      enrichedEvents.push(enrichedEvent);
+      });
     }
 
     if (req.query.id) {
@@ -73,6 +81,7 @@ exports.createEvent = async (req, res) => {
       title: req.body.title,
       description: req.body.description,
       date: req.body.date,
+      host: userId,
       participants: userId,
     });
     await newEvent.save();
@@ -115,7 +124,6 @@ exports.updateEvent = async (req, res) => {
 };
 
 exports.updateEventParticipants = async (req, res) => {
-  console.log("trying to manage participants!");
   try {
     const eventId = req.query.id;
     const { addid, removeid } = req.body;
@@ -125,6 +133,7 @@ exports.updateEventParticipants = async (req, res) => {
     }
 
     const event = await Event.findById(eventId);
+
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
@@ -133,9 +142,18 @@ exports.updateEventParticipants = async (req, res) => {
     if (removeid) {
       const index = event.participants.indexOf(removeid);
       if (index !== -1) {
-        event.participants.splice(index, 1);
-        await event.save();
-        return res.json({ message: "Participant removed", event });
+        if (removeid !== event.host) {
+          event.participants.splice(index, 1);
+          await event.save();
+          return res
+            .status(200)
+            .json({ message: "Participant removed", event });
+        } else {
+          console.log("cannot remove event host");
+          return res
+            .status(400)
+            .json({ message: "Cannot remove the event host" });
+        }
       } else {
         return res
           .status(400)
