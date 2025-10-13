@@ -1,24 +1,26 @@
 const Joi = require("joi");
 
 const createEventSchema = Joi.object({
-  name: Joi.string()
+  title: Joi.string()
     .min(3)
     .max(50)
     .messages({
-      "string.min": "Name must be at least 3 characters long.",
-      "string.max": "Name must not exceed 50 characters.",
+      "string.empty": "Title is required.",
+      "string.min": "Title must be at least 3 characters long.",
+      "string.max": "Title must not exceed 50 characters.",
     })
     .required(),
   description: Joi.string()
     .messages({
-      "string.min": "Name must be at least 3 characters long.",
-      "string.max": "Name must not exceed 255 characters.",
+      "string.empty": "Description is required.",
+      "string.min": "Description must be at least 3 characters long.",
+      "string.max": "Description must not exceed 255 characters.",
     })
     .required(),
   date: Joi.number()
     .integer()
     .messages({
-      "number.base": "Date must be an integer.",
+      "number.base": "Date is required.",
     })
     .required(),
 });

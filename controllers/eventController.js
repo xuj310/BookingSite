@@ -28,7 +28,7 @@ exports.createEvent = async (req, res) => {
     }
     // Put the user that created the event in the participants
     const newEvent = new Event({
-      name: req.body.name,
+      title: req.body.title,
       description: req.body.description,
       date: req.body.date,
       participants: userId,
@@ -47,7 +47,7 @@ exports.updateEvent = async (req, res) => {
   try {
     // Changing the fields is optional
     const updateFields = {};
-    if (req.body.name) updateFields.name = req.body.name;
+    if (req.body.title) updateFields.title = req.body.title;
     if (req.body.description) updateFields.description = req.body.description;
     if (req.body.date) updateFields.date = req.body.date;
 

@@ -2,17 +2,17 @@ const Joi = require("joi");
 
 const updateEventSchema = Joi.object({
   id: Joi.string(),
-  name: Joi.string()
+  title: Joi.string()
       .min(3)
       .max(50)
       .messages({
-        "string.min": "Name must be at least 3 characters long.",
-        "string.max": "Name must not exceed 50 characters.",
+        "string.min": "Title must be at least 3 characters long.",
+        "string.max": "Title must not exceed 50 characters.",
       }),
     description: Joi.string()
       .messages({
-        "string.min": "Name must be at least 3 characters long.",
-        "string.max": "Name must not exceed 255 characters.",
+        "string.min": "Description must be at least 3 characters long.",
+        "string.max": "Description must not exceed 255 characters.",
       }),
     date: Joi.number()
       .integer()
