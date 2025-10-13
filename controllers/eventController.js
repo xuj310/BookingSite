@@ -1,18 +1,58 @@
 const { Event } = require("../models/eventModel");
+const { User } = require("../models/userModel");
 
 exports.getEvents = async (req, res) => {
   try {
-    // If an id is provided, retrieve the specific event
+    let events = [];
+
     if (req.query.id) {
-      const event = await Event.findById(req.query.id);
-      if (!event) {
-        return res.status(404).json({ message: "Event not found" });
-      }
-      return res.json(event);
+      const singleEvent = await Event.findById(req.query.id);
+      events.push(singleEvent);
+    } else {
+      events = await Event.find();
     }
-    // If there's no id provided, return all events
-    const product = await Event.find();
-    res.json(product);
+
+    // Filter by userId if provided
+    if (req.query.userid) {
+      console.log("Found userid!");
+      const filtered = [];
+      for (let i = 0; i < events.length; i++) {
+        const event = events[i];
+        if (event.participants.includes(req.query.userid)) {
+          filtered.push(event);
+        }
+      }
+      events = filtered;
+    }
+
+    const enrichedEvents = [];
+
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      const participantDetails = [];
+
+      for (let j = 0; j < event.participants.length; j++) {
+        const userId = event.participants[j];
+        const user = await User.findById(userId);
+        participantDetails.push({ id: userId, name: user.name });
+      }
+
+      const enrichedEvent = {
+        _id: event._id,
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        participants: participantDetails,
+      };
+
+      enrichedEvents.push(enrichedEvent);
+    }
+
+    if (req.query.id) {
+      res.json(enrichedEvents[0]);
+    } else {
+      res.json(enrichedEvents);
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
