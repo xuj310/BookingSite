@@ -15,7 +15,10 @@ exports.getEvents = async (req, res) => {
     */
     if (req.query.id) {
       const singleEvent = await Event.findById(req.query.id);
-      if (singleEvent) events.push(singleEvent);
+      if (!singleEvent) {
+        return res.status(404).json({ errors: "Event not found" });
+      }
+      events.push(singleEvent);
     } else {
       events = await Event.find();
     }
