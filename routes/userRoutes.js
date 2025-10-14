@@ -7,6 +7,7 @@ const middlewares = {
 const userValidations = {
   requireId: require("../validations/requireId"),
   validateId: require("../validations/validateId"),
+  validateLogin: require("../validations/validateLogin"),
   validateCreateUser: require("../validations/validateCreateUser"),
   validateUpdateUser: require("../validations/validateUpdateUser"),
   validateCredentials: require("../validations/validateCredentials"),
@@ -45,6 +46,7 @@ class userRoutes extends BaseRoutes {
         middlewares: [
           userValidations.requireId,
           userValidations.validateId,
+          userValidations.validateLogin,
           userValidations.validateUpdateUser,
         ],
         handler: userControllers.updateUser,
@@ -55,6 +57,7 @@ class userRoutes extends BaseRoutes {
         middlewares: [
           userValidations.requireId,
           middlewares.checkUserToken,
+          userValidations.validateLogin,
           userValidations.validateId,
         ],
         handler: userControllers.deleteUser,
