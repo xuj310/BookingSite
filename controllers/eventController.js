@@ -92,13 +92,6 @@ exports.createEvent = async (req, res) => {
     const userId = req.user._id;
     const eventDate = req.body.date;
 
-    // Reject if the date is in the past
-    if (eventDate < Date.now()) {
-      return res.status(500).json({
-        message: "Event date cannot be in the past",
-      });
-    }
-
     const newEvent = new Event({
       imgUrl: req.body.imgUrl,
       title: req.body.title,
