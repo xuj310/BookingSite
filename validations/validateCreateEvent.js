@@ -3,7 +3,7 @@ const Joi = require("joi");
 const createEventSchema = Joi.object({
   imgUrl: Joi.string()
     .messages({
-      "string.empty": "An image url is required."
+      "string.empty": "An image url is required.",
     })
     .required(),
   title: Joi.string()
@@ -31,12 +31,29 @@ const createEventSchema = Joi.object({
 });
 
 const validateCreateEvent = (req, res, next) => {
-  const { error } = createEventSchema.validate(req.body, {
-    abortEarly: false,
-  });
+  const { error } = createEventSchema.validate(req.body, { abortEarly: false });
 
-  if (error) {
-    const messages = error.details.map((detail) => detail.message);
+  const messages = [];
+
+  // Collect all the validation errors
+  if (error && error.details) {
+    error.details.forEach((detail) => {
+      messages.push(detail.message);
+    });
+  }
+
+  // Set the time of day to 0 so we don't have to deal with hour/minute issues.
+  const submittedDate = new Date(req.body.date);
+  const today = new Date();
+
+  submittedDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  if (req.body.date != null && submittedDate < today) {
+    messages.push("Event date cannot be in the past");
+  }
+
+  if (messages.length > 0) {
     return res.status(400).json({ errors: messages });
   }
 

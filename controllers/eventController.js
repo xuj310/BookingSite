@@ -71,6 +71,7 @@ exports.getEvents = async (req, res) => {
         title: event.title,
         description: event.description,
         date: event.date,
+        host: event.host,
         participants: participantDetails,
       });
     }
@@ -89,23 +90,32 @@ exports.getEvents = async (req, res) => {
 exports.createEvent = async (req, res) => {
   try {
     const userId = req.user._id;
+    const eventDate = req.body.date;
 
-    // Put the user that created the event in the participants and as the host.
+    // Reject if the date is in the past
+    if (eventDate < Date.now()) {
+      return res.status(500).json({
+        message: "Event date cannot be in the past",
+      });
+    }
+
     const newEvent = new Event({
       imgUrl: req.body.imgUrl,
       title: req.body.title,
       description: req.body.description,
-      date: req.body.date,
+      date: eventDate,
       host: userId,
       participants: userId,
     });
+
     await newEvent.save();
+
     return res.status(201).json({
       message: "Event created successfully",
-      newEvent: newEvent,
+      newEvent,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
