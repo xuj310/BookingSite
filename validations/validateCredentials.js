@@ -5,8 +5,8 @@ const loginUserSchema = Joi.object({
     .min(3)
     .max(50)
     .messages({
-      "string.min": "Name must be at least 3 characters long.",
-      "string.max": "Name must not exceed 50 characters.",
+      "string.min": "E-Mail must be at least 3 characters long.",
+      "string.max": "E-Mail must not exceed 50 characters.",
     })
     .required(),
   password: Joi.string()

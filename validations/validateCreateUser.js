@@ -15,8 +15,8 @@ const createUserSchema = Joi.object({
     .max(50)
     .messages({
       "string.empty": "E-mail is required.",
-      "string.min": "Name must be at least 3 characters long.",
-      "string.max": "Name must not exceed 50 characters.",
+      "string.min": "E-Mail must be at least 3 characters long.",
+      "string.max": "E-Mail must not exceed 50 characters.",
     })
     .required(),
   phoneNum: Joi.string()
@@ -32,7 +32,7 @@ const createUserSchema = Joi.object({
     .min(1)
     .max(100)
     .messages({
-      "number.empty": "Phone number is required.",
+      "number.empty": "Age is required.",
       "number.base": "Age must be a number.",
       "number.min": "Age must be at least 1.",
       "number.max": "Age must not exceed 100.",
@@ -42,7 +42,7 @@ const createUserSchema = Joi.object({
     .min(6)
     .max(30)
     .messages({
-      "string.empty": "Phone number is required.",
+      "string.empty": "Password is required.",
       "string.min": "Password must be at least 6 characters long.",
       "string.max": "Password must not exceed 30 characters.",
     })
