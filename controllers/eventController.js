@@ -96,7 +96,7 @@ exports.getEvents = async (req, res) => {
   }
 };
 
-// Creating a new event
+// Creating a new event based on the user's entered details. It will always add the user who is creating the event to the participants list.
 exports.createEvent = async (req, res) => {
   try {
     const newEvent = new Event({
