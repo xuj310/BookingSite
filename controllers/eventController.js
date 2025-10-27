@@ -5,6 +5,8 @@ const { User } = require("../models/userModel");
   Events Controller
 
   Logic for the CRUD operations. Some of the functions handle different sub-operations such as getEvents handling both returning all events and a specific event. By the time it's reached here, basic validations will have already occured so we just process the request and return it.
+
+  (req, res) in the parameters correspond to the incoming request and returned response respectively
 */
 
 // Returns events, either all of them or a specific one
@@ -156,6 +158,7 @@ exports.updateEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
+    // Return the new details of the event
     return res.status(200).json({
       message: "Event updated successfully",
       updatedEvent: updatedEvent,
