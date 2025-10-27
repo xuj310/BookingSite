@@ -7,6 +7,7 @@ const { User } = require("../models/userModel");
   Logic for the CRUD operations. Some of the functions handle different sub-operations such as getEvents handling both returning all events and a specific event. By the time it's reached here, basic validations will have already occured so we just process the request and return it.
 */
 
+// Returns events, either all of them or a specific one
 exports.getEvents = async (req, res) => {
   try {
     let events = [];
@@ -70,6 +71,7 @@ exports.getEvents = async (req, res) => {
         await event.save();
       }
 
+      // Construct event details to send back
       updatedEvents.push({
         _id: event._id,
         imgUrl: event.imgUrl,
@@ -92,22 +94,21 @@ exports.getEvents = async (req, res) => {
   }
 };
 
+// Creating a new event
 exports.createEvent = async (req, res) => {
   try {
-    const userId = req.user._id;
-    const eventDate = req.body.date;
-
     const newEvent = new Event({
       imgUrl: req.body.imgUrl,
       title: req.body.title,
       description: req.body.description,
-      date: eventDate,
-      host: userId,
-      participants: userId,
+      date: req.body.date,
+      host: req.user._id,
+      participants: req.user._id,
     });
 
     await newEvent.save();
 
+    // Return that it was successful along with the details of the event
     return res.status(201).json({
       message: "Event created successfully",
       newEvent,
@@ -117,7 +118,9 @@ exports.createEvent = async (req, res) => {
   }
 };
 
+// Update an event, only the host can update the event
 exports.updateEvent = async (req, res) => {
+  // We need the userId to check if they are a host since only the host can update events
   const userId = req.user._id;
   const eventId = req.query.id;
 
@@ -166,6 +169,7 @@ exports.updateEvent = async (req, res) => {
 exports.updateEventParticipants = async (req, res) => {
   try {
     const eventId = req.query.id;
+    // We need to see whether we are adding or removing participants
     const { addid, removeid } = req.body;
 
     if (!eventId) {
@@ -183,6 +187,7 @@ exports.updateEventParticipants = async (req, res) => {
       const index = event.participants.indexOf(removeid);
       // If we found the participant, start removing them.
       if (index !== -1) {
+        // If the requested removed user is a host, then we can't do that.
         if (removeid !== event.host) {
           // Remove the participant
           event.participants.splice(index, 1);
@@ -224,6 +229,7 @@ exports.updateEventParticipants = async (req, res) => {
   }
 };
 
+// Delete an event, only the event host can delete the event
 exports.deleteEvent = async (req, res) => {
   try {
     const userId = req.user._id;
